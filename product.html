@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品详情 - 心界哨兵</title>
+    <!-- 复用主页面依赖 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #3D82AC; 
+            --primary-light: #5a99c4;
+            --primary-dark: #2a6085;
+            --secondary: #6b7280; 
+            --white: #ffffff;
+            --black: #1f2937;
+        }
+        /* 复用主页面核心样式 */
+        .bg-primary { background-color: var(--primary); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+        .hover\:bg-primary-light:hover { background-color: var(--primary-light); }
+        .hover\:text-primary-light:hover { color: var(--primary-light); }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(61, 130, 172, 0.2);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(61, 130, 172, 0.1);
+        }
+/* 产品单图样式 */
+.product-img {
+    position: relative;
+    border-radius: 8px;
+    height: 400px;
+    overflow: hidden;
+}
+.product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+        /* 页面通用样式 */
+        .section-padding {
+            padding: 80px 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* 返回顶部按钮 */
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(61, 130, 172, 0.3);
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        .back-to-home:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- 返回首页按钮（替代导航栏） -->
+       
+<!-- 顶部导航栏（和initial.html保持一致） -->
+<nav class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="navbar">
+    <div class="container h-16 flex justify-between items-center px-4">
+        <!-- 左侧logo：点击返回initial.html首页 -->
+        <div class="flex items-center cursor-pointer" onclick="location.href='initial.html'">
+            <span class="text-2xl font-bold text-primary"><i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵-AI驱动的国人PM心血管未病先防平台</span>
+        </div>
+        
+        <!-- 中间导航菜单（和initial.html一致） -->
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="initial.html#home" class="text-gray-700 hover:text-primary transition-colors">首页</a>
+            <a href="initial.html#product" class="text-gray-700 hover:text-primary transition-colors">产品介绍</a>
+            <a href="initial.html#research" class="text-gray-700 hover:text-primary transition-colors">最新研究</a>
+            <a href="initial.html#about" class="text-gray-700 hover:text-primary transition-colors">关于我们</a>
+        </div>
+        
+        <!-- 右侧用户区域：显示登录状态 + 用户名点击跳转center.html -->
+        <div id="nav-user-zone" class="flex items-center">
+            <div class="flex items-center gap-4">
+                <span class="hidden md:inline text-gray-700 cursor-pointer hover:text-primary transition-colors" id="welcome-text" onclick="location.href='center.html'">欢迎, 用户</span>
+                <button onclick="logout()" class="btn-outline text-sm px-4 py-2"><i class="fa-solid fa-sign-out-alt mr-1"></i> 退出登录</button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单按钮（和initial.html一致） -->
+        <button class="md:hidden text-gray-70 text-xl" id="mobile-menu-btn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- 移动端下拉菜单（和initial.html一致） -->
+    <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
+        <div class="container py-4 flex flex-col space-y-4 px-4">
+            <a href="initial.html#home" class="text-gray-700 hover:text-primary py-2 transition-colors">首页</a>
+            <a href="initial.html#product" class="text-gray-700 hover:text-primary py-2 transition-colors">产品介绍</a>
+            <a href="initial.html#research" class="text-gray-700 hover:text-primary py-2 transition-colors">最新研究</a>
+            <a href="initial.html#about" class="text-gray-700 hover:text-primary py-2 transition-colors">关于我们</a>
+            <div class="border-t border-gray-200 pt-2 mt-2">
+                <span class="text-gray-700 block mb-2 cursor-pointer hover:text-primary transition-colors" id="mobile-welcome" onclick="location.href='center.html'">欢迎, 用户</span>
+                <button onclick="logout()" class="btn-outline text-sm px-4 py-2 w-full">退出登录</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <!-- 产品详情主内容 -->
+    <section class="section-padding bg-white">
+        <div class="container">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-center mb-16">
+                <span class="text-primary">心界哨兵</span> - 个性化解决方案
+            </h2>
+
+            <!-- 1. 个人版 -->
+            <div class="card mb-16 p-8">
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <!-- 左侧轮播图 -->
+                    <div class="lg:w-1/2 w-full">
+                       <div class="product-img">
+    <img src="2_1.jpg" alt="对应版本名称">
+</div>                    </div>
+                    <!-- 右侧信息区 -->
+                    <div class="lg:w-1/2 w-full">
+                        <h3 class="text-2xl font-bold text-primary mb-6">个人版 - 私人心血管健康管家</h3>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">准确监测心率、血压等核心指标，异常情况即时提醒</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">AI算法精准识别潜在风险，提前72小时发出预警</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">生成个性化健康报告，提供饮食、运动等生活方式建议</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">支持多设备同步，随时随地查看健康数据</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="text-xl font-bold text-gray-800">套餐价格：¥99/月</div>
+                            <button class="btn-primary text-center" onclick="openOrderModal('个人版')">在线订购</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 企业版 -->
+            <div class="card mb-16 p-8">
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <!-- 左侧轮播图 -->
+                    <div class="lg:w-1/2 w-full">
+                      <div class="product-img">
+    <img src="2_2.jpg" alt="企业版">
+</div>                    </div>
+                    <!-- 右侧信息区 -->
+                    <div class="lg:w-1/2 w-full">
+                        <h3 class="text-2xl font-bold text-primary mb-6">企业版 - 员工心血管健康管理方案</h3>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">为企业员工提供批量健康监测服务，降低职场健康风险</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">生成企业员工健康分析报告，制定针对性干预措施</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">提供企业专属健康管理后台，支持数据可视化管理</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">定制化健康讲座和干预方案，提升员工健康意识</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="text-xl font-bold text-gray-800">套餐价格：¥88/人/月（100人起）</div>
+                            <button class="btn-primary text-center" onclick="openOrderModal('企业版')">在线订购</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 政府版 -->
+            <div class="card mb-16 p-8">
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <!-- 左侧轮播图 -->
+                    <div class="lg:w-1/2 w-full">
+                       <div class="product-img">
+    <img src="2_3.jpg" alt="政府版">
+</div>                    </div>
+                    <!-- 右侧信息区 -->
+                    <div class="lg:w-1/2 w-full">
+                        <h3 class="text-2xl font-bold text-primary mb-6">政府版 - 区域心血管健康管理平台</h3>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">构建区域居民心血管健康数据库，支撑公共卫生决策</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">实现高危人群精准筛查和干预，降低区域心血管疾病发病率</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">对接基层医疗机构，形成分级诊疗闭环管理</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">提供多维度健康数据分析报表，支持政策制定</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="text-xl font-bold text-gray-800">定制化报价</div>
+                            <button class="btn-primary text-center" onclick="openOrderModal('政府版')">在线咨询</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 卫健委版 -->
+            <div class="card p-8">
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <!-- 左侧轮播图 -->
+                    <div class="lg:w-1/2 w-full">
+                  <div class="product-img">
+    <img src="2_4.jpg" alt="卫健委">
+</div>                    </div>
+                    <!-- 右侧信息区 -->
+                    <div class="lg:w-1/2 w-full">
+                        <h3 class="text-2xl font-bold text-primary mb-6">卫健委版 - 行业监管与质量控制平台</h3>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">监管辖区内心血管诊疗机构服务质量和数据真实性</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">建立心血管疾病诊疗质量控制指标体系和评价标准</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">实现诊疗数据互联互通，支撑行业标准化建设</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                                <p class="text-gray-700">提供行业培训和能力提升平台，规范诊疗行为</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <div class="text-xl font-bold text-gray-800">定制化报价</div>
+                            <button class="btn-primary text-center" onclick="openOrderModal('卫健委版')">在线咨询</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 复用主页面页脚 -->
+    <footer class="bg-black text-white pt-16 pb-8 mt-16">
+        <div class="container">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-1 md:col-span-4 text-center">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center justify-center"><i class="fa-solid fa-heart-pulse mr-2 text-primary"></i> 心界哨兵</h3>
+                    <p class="text-gray-400 mb-6 text-center">用心守护每一次心跳，用科技赋能健康生活</p>
+                    <p class="text-gray-500 text-sm mb-8 text-center">© 2024 心界哨兵</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <div class="flex justify-center space-x-6">
+    <a href="initial.html" class="hover:text-primary transition-colors">首页</a>
+    <a href="initial.html#product" class="hover:text-primary transition-colors">产品介绍</a>
+    <a href="initial.html#research" class="hover:text-primary transition-colors">最新研究</a>
+    <a href="initial.html#about" class="hover:text-primary transition-colors">关于我们</a>
+</div>
+            </div>
+        </div>
+    </footer>
+
+
+   <!-- 订购模态框 -->
+<div id="order-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[100] backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-md p-8 relative">
+        <button onclick="closeOrderModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+        <h2 class="text-2xl font-bold text-center mb-6 text-primary" id="order-title">在线订购 - 个人版</h2>
+        <form id="order-form" onsubmit="submitOrder(event)" class="space-y-4">
+            <div>
+                <label class="block text-gray-700 mb-2 text-sm">联系人</label>
+                <input type="text" id="order-name" placeholder="请输入2-4个中文字符的姓名" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-2 text-sm">联系电话</label>
+                <input type="tel" id="order-phone" placeholder="请输入11位有效手机号" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+            </div>
+            <!-- 企业版专属：人数输入项（默认隐藏） -->
+            <div id="order-count-wrap" class="hidden">
+                <label class="block text-gray-700 mb-2 text-sm">订购人数</label>
+                <input type="number" id="order-count" placeholder="企业版需100人起订" min="100" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-2 text-sm">需求描述</label>
+                <textarea id="order-desc" rows="3" placeholder="请简要描述您的需求（选填）" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"></textarea>
+            </div>
+            <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition-colors">提交订单</button>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- 支付弹窗 -->
+<div id="payment-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[101] backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-md p-8 relative">
+        <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+        <h2 class="text-2xl font-bold text-center mb-6 text-primary">支付确认</h2>
+        <!-- 👇 这里就是图片显示的位置 👇 -->
+        <div class="flex justify-center mb-8">
+            <!-- 改这里的src路径！！！ -->
+            <img src="oneself.jpg" alt="支付二维码/凭证" class="max-w-[250px] w-full h-auto rounded-lg border border-gray-200">
+        </div>
+        <button onclick="completePayment()" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition-colors">
+            已支付完成
+        </button>
+    </div>
+</div>
+
+<!-- 咨询成功提示弹窗 -->
+<div id="consult-success-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[101] backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-md p-8 text-center">
+        <i class="fa-solid fa-phone-volume text-primary text-5xl mb-4"></i>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">咨询申请已提交</h2>
+        <p class="text-gray-600 mb-8">我们的工作人员将在72小时内联系您，请保持电话畅通！</p>
+        <button onclick="closeConsultSuccessModal()" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-light transition-colors">
+            确定
+        </button>
+    </div>
+</div>
+
+
+    <script>
+// 页面加载初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化移动端菜单
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        const isOpen = !mobileMenu.classList.contains('hidden');
+        menuBtn.innerHTML = isOpen ? '<i class="fa-solid fa-times"></i>' : '<i class="fa-solid fa-bars"></i>';
+    });
+
+    // 导航栏滚动样式
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+        } else {
+            navbar.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+        }
+    });
+
+    // 标签切换逻辑
+    const navItems = document.querySelectorAll('.nav-item[data-tab]');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+            
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.add('hidden'));
+            
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            
+            if (tabId === 'messages') {
+                document.getElementById('message-badge').style.display = 'none';
+                localStorage.setItem('message_badge_shown', 'false');
+            }
+        });
+    });
+
+    // 初始化用户信息
+   // 初始化用户信息（动态读取localStorage里的登录用户）
+const currentUser = JSON.parse(localStorage.getItem('active_user') || '{"u":"未登录用户"}');
+// 桌面端欢迎语（动态显示）
+document.getElementById('welcome-text').textContent = `欢迎, ${currentUser.u || '未登录用户'}`;
+// 移动端欢迎语（如果有，也加上）
+if (document.getElementById('mobile-welcome')) {
+    document.getElementById('mobile-welcome').textContent = `欢迎, ${currentUser.u || '未登录用户'}`;
+}
+// 个人中心头像下方的用户名也同步
+document.getElementById('user-name').textContent = currentUser.u || '未登录用户';
+
+    // 初始化消息红点状态
+    const badgeShown = localStorage.getItem('message_badge_shown');
+    if (badgeShown === 'false') {
+        document.getElementById('message-badge').style.display = 'none';
+    }
+});
+
+// 保存个人信息功能
+function saveProfile() {
+    const username = document.getElementById('username-input').value.trim();
+    const phone = document.getElementById('phone-input').value.trim();
+    const email = document.getElementById('email-input').value.trim();
+    const birthday = document.getElementById('birthday-input').value;
+    const gender = document.getElementById('gender-male').checked ? '男' : '女';
+
+    if (!username) {
+        alert('用户名不能为空！');
+        return;
+    }
+
+    let currentUser = JSON.parse(localStorage.getItem('active_user') || '{}');
+    currentUser.u = username;
+    currentUser.phone = phone;
+    currentUser.email = email;
+    currentUser.birthday = birthday;
+    currentUser.gender = gender;
+    
+    localStorage.setItem('active_user', JSON.stringify(currentUser));
+    
+    document.getElementById('user-name').textContent = username;
+    document.getElementById('welcome-text').textContent = `欢迎, ${username}`;
+    
+    alert('个人信息修改成功！');
+}
+
+// 修改密码功能
+function changePassword() {
+    const currentPwd = document.getElementById('current-pwd').value.trim();
+    const newPwd = document.getElementById('new-pwd').value.trim();
+    const confirmPwd = document.getElementById('confirm-pwd').value.trim();
+
+    if (!currentPwd) {
+        alert('请输入当前密码！');
+        return;
+    }
+    if (!newPwd) {
+        alert('请输入新密码！');
+        return;
+    }
+    if (newPwd.length < 6) {
+        alert('新密码长度不能少于6位！');
+        return;
+    }
+    if (newPwd !== confirmPwd) {
+        alert('两次输入的新密码不一致！');
+        return;
+    }
+
+    let currentUser = JSON.parse(localStorage.getItem('active_user') || '{}');
+    currentUser.p = newPwd;
+    localStorage.setItem('active_user', JSON.stringify(currentUser));
+    
+    document.getElementById('current-pwd').value = '';
+    document.getElementById('new-pwd').value = '';
+    document.getElementById('confirm-pwd').value = '';
+    
+    alert('密码修改成功，请重新登录');
+    localStorage.removeItem('active_user');
+    window.location.href = 'initial.html';
+}
+
+// 退出登录函数
+function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        localStorage.removeItem('active_user');
+        window.location.href = 'initial.html';
+    }
+}
+
+// ========== 新增：订购/咨询相关逻辑 ==========
+let currentOrderType = ''; // 记录当前订购/咨询类型
+
+// 打开订购/咨询模态框
+// 打开订购/咨询模态框
+function openOrderModal(type) {
+    currentOrderType = type;
+    const orderTitle = document.getElementById('order-title');
+    const orderCountWrap = document.getElementById('order-count-wrap');
+    
+    // 统一显示表单弹窗（无论订购/咨询）
+    // 区分标题：订购/咨询
+    const titlePrefix = (type === '政府版' || type === '卫健委版') ? '在线咨询' : '在线订购';
+    orderTitle.innerText = `${titlePrefix} - ${type}`;
+    
+    // 显示表单弹窗
+    document.getElementById('order-modal').style.display = 'flex';
+    
+    // 仅企业版显示人数输入项，其他版本（含政府/卫健委）隐藏
+    if (type === '企业版') {
+        orderCountWrap.classList.remove('hidden');
+        document.getElementById('order-count').required = true;
+    } else {
+        orderCountWrap.classList.add('hidden');
+        document.getElementById('order-count').required = false;
+    }
+    
+    // 清空表单
+    document.getElementById('order-form').reset();
+}
+
+// 关闭订购模态框
+function closeOrderModal() {
+    document.getElementById('order-modal').style.display = 'none';
+}
+
+// 提交订单（含表单验证）
+
+// 提交订单/咨询（含表单验证）
+function submitOrder(e) {
+    e.preventDefault();
+    const name = document.getElementById('order-name').value.trim();
+    const phone = document.getElementById('order-phone').value.trim();
+    const count = document.getElementById('order-count').value;
+    const desc = document.getElementById('order-desc').value.trim();
+    
+    // 1. 姓名验证：2-4个中文字符（所有版本通用）
+    const nameReg = /^[\u4e00-\u9fa5]{2,4}$/;
+    if (!nameReg.test(name)) {
+        alert('请输入2-4个中文字符的真实姓名！');
+        document.getElementById('order-name').focus();
+        return;
+    }
+    
+    // 2. 手机号验证：11位有效手机号（所有版本通用）
+    const phoneReg = /^1[3-9]\d{9}$/;
+    if (!phoneReg.test(phone)) {
+        alert('请输入11位有效手机号码！');
+        document.getElementById('order-phone').focus();
+        return;
+    }
+    
+    // 3. 仅企业版验证人数（其他版本跳过）
+    if (currentOrderType === '企业版' && (count < 100 || !count)) {
+        alert('企业版需100人起订，请输入正确的人数！');
+        document.getElementById('order-count').focus();
+        return;
+    }
+    
+    // 验证通过，关闭表单弹窗
+    closeOrderModal();
+    
+    // 区分流程：订购类（个人/企业）走支付，咨询类（政府/卫健委）走提示
+    if (currentOrderType === '政府版' || currentOrderType === '卫健委版') {
+        // 咨询类：弹出72小时联系提示
+        openConsultSuccessModal();
+    } else {
+        // 订购类：弹出支付弹窗
+        document.getElementById('payment-modal').style.display = 'flex';
+    }
+}
+
+// 关闭支付弹窗
+function closePaymentModal() {
+    document.getElementById('payment-modal').style.display = 'none';
+}
+
+function completePayment(orderType) {
+    closePaymentModal();
+
+    // 根据传入的 orderType 来设置订单类型
+    const currentOrderType = orderType; // "个人版" 或 "企业版"
+
+    // 生成订单ID
+    const currentOrderId = 'ORDER' + Date.now();
+
+    // 创建订单对象
+    const newOrder = {
+        id: currentOrderId,
+        type: currentOrderType,
+        name: currentOrderType === '个人版' ? '个人版服务' : '企业版服务',
+        price: currentOrderType === '个人版' ? '¥99/月' : '¥888/人',
+        time: new Date().toLocaleString(),
+        status: 'unused' // 初始状态为未使用
+    };
+
+    // 将订单添加到本地存储
+    let orders = JSON.parse(localStorage.getItem('user_orders')) || [];
+    orders.push(newOrder);
+    localStorage.setItem('user_orders', JSON.stringify(orders));
+
+    // 在个人中心显示红点
+    localStorage.setItem('message_badge_shown', 'true');
+
+    // 显示订单已支付完成的提示
+    alert(`恭喜！${currentOrderType}订购订单已支付完成，我们将尽快为您开通服务！`);
+
+    // 跳转到个人中心页面
+    window.location.href = 'center.html'; // 这里会跳转到个人中心
+}
+// 打开咨询成功提示框
+function openConsultSuccessModal() {
+    document.getElementById('consult-success-modal').style.display = 'flex';
+}
+
+// 关闭咨询成功提示框
+function closeConsultSuccessModal() {
+    document.getElementById('consult-success-modal').style.display = 'none';
+}
+    </script>
+</body>
+</html>
