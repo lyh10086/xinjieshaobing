@@ -185,8 +185,13 @@
 <body class="bg-gray-50 text-gray-800">
 <nav class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="navbar">
     <div class="container h-16 flex justify-between items-center">
-        <div class="flex items-center cursor-pointer" onclick="location.hash='#home'; renderUI();">
-            <span class="text-2xl font-bold text-primary"><i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵-AI驱动的国人PM心血管未病先防平台</span>
+        <div class="flex items-center cursor-pointer" >
+            <span class="text-2xl font-bold text-primary">
+    <i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵-AI驱动的国人PM心血管未病先防平台
+    <span class="text-sm text-gray-500 ml-4 font-normal hidden sm:inline">
+        平台访问量：<span id="visit-count">25711</span> | 产品购买量：<span id="buy-count">716</span>
+    </span>
+</span>
         </div>
         <div class="hidden md:flex items-center space-x-8">
             <a href="#home" class="text-gray-700 hover:text-primary transition-colors">首页</a>
@@ -453,23 +458,6 @@
 
     </div>
 </div>
-<div id="forgot-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[100] backdrop-blur-sm">
-    <div class="bg-white rounded-2xl w-full max-w-md p-8 relative">
-        <button onclick="closeModal('forgot')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
-        <h2 class="text-3xl font-bold text-center mb-8">忘记密码</h2>
-        <form id="forgot-form" onsubmit="handleResetPassword(event)" class="space-y-4">
-            <div><input type="email" id="forgot-email" placeholder="邮箱地址" required class="input-field bg-gray-50 border-none"></div>
-            <div class="flex items-center gap-2">
-                <input type="text" id="forgot-captcha" placeholder="验证码" required class="input-field flex-1 bg-gray-50 border-none">
-                <div class="w-32 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center text-lg tracking-widest select-none" id="forgot-captcha-img" onclick="refreshForgotCaptcha()">WY3ZE</div>
-                <button type="button" onclick="refreshForgotCaptcha()" class="text-gray-400 hover:text-primary"><i class="fa-solid fa-arrows-rotate"></i></button>
-            </div>
-            <div class="mt-6">
-                <button type="submit" class="py-3 px-8 bg-white text-[#3D82AC] border border-[#3D82AC] font-bold rounded hover:bg-blue-50 transition-colors">重置</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <div id="pay-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[110]">
     <div class="bg-white rounded-2xl p-8 w-80 text-center">
@@ -484,6 +472,62 @@
 </div>
 
 <script>
+// 在 <script> 标签的最开头定义
+const DEFAULT_STATS = { visitCount: 25711, buyCount: 716 };
+
+// ========== 统计数据核心函数 ==========
+// ========== 统计数据核心函数 ==========
+function syncStatsEverywhere() {
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || '{"visitCount": 25711, "buyCount": 716}');
+    if (document.getElementById('visit-count'))
+        document.getElementById('visit-count').textContent = stats.visitCount;
+    if (document.getElementById('buy-count'))
+        document.getElementById('buy-count').textContent = stats.buyCount;
+
+
+}
+
+
+// 修改 initStats 函数内部逻辑
+function initStats() {
+    if (window.statsInited) return;
+    window.statsInited = true;
+
+    // 使用统一的变量名
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || JSON.stringify(DEFAULT_STATS));
+    
+    stats.visitCount += 1;
+    localStorage.setItem('platform_stats', JSON.stringify(stats));
+    
+    // 更新显示
+    document.getElementById('visit-count').textContent = stats.visitCount;
+    document.getElementById('buy-count').textContent = stats.buyCount;
+    return stats;
+}
+
+
+
+
+// 更新购买量（供product.html调用）
+// 唯一确定的更新购买量函数（原子操作，绝对只+1）
+function updateBuyCount() {
+    if (window.buyLocked) return;
+    window.buyLocked = true;
+
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || '{"visitCount": 25711, "buyCount": 716}');
+    stats.buyCount += 1;
+
+    localStorage.setItem('platform_stats', JSON.stringify(stats));
+    document.getElementById('buy-count').textContent = stats.buyCount;
+
+    setTimeout(() => { window.buyLocked = false; }, 1000);
+}
+
+
+
+
+
+// 全局状态变量（之前漏了，导致轮播等功能报错）
 let state = {
     currentUser: JSON.parse(localStorage.getItem('active_user') || 'null'),
     authTab: 'login',
@@ -492,17 +536,20 @@ let state = {
     slideInterval: null
 };
 
+
 window.onload = () => {
-    initCarousel();
-    initScrollAnimation();
-    initResearchChart();
-    initMobileMenu();
-    initNavbarScroll();
-    renderUI();
-    // 核心修复3：页面加载后初始化验证码
-    refreshCaptcha();
-    refreshForgotCaptcha();
+    initStats(); // 只执行这一次，完成访问量+1和页面显示
+    initCarousel(); // 保留轮播
+    initScrollAnimation(); // 保留滚动动画
+    initResearchChart(); // 保留图表
+    initMobileMenu(); // 保留移动端菜单
+    initNavbarScroll(); // 保留导航栏滚动
+    renderUI(); // 保留登录状态渲染
+    refreshCaptcha(); // 保留验证码
+    refreshForgotCaptcha(); // 保留忘记密码验证码
 };
+
+
 function initNavbarScroll() {
     const navbar = document.getElementById('navbar');
     window.addEventListener('scroll', () => {
@@ -587,6 +634,8 @@ function initResearchChart() {
     });
 }
 
+
+
 function validatePassword(input) {
     if (input.value.length > 0 && input.value.length <= 9) {
         input.classList.add('border-error');
@@ -603,6 +652,8 @@ function checkLoginBeforeDetail() {
         location.hash = '#detail';
     }
 }
+
+
 
 function togglePassword() {
     const passInput = document.getElementById('auth-pass');
@@ -623,6 +674,7 @@ function refreshCaptcha() {
     document.getElementById('captcha').textContent = code;
 }
 
+
 function toggleRegPassword() {
     const passInput = document.getElementById('reg-password');
     const icon = document.getElementById('reg-password-icon');
@@ -634,6 +686,7 @@ function toggleRegPassword() {
         icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
 }
+
 
 function toggleRegConfirmPassword() {
     const passInput = document.getElementById('reg-confirm-password');
@@ -656,37 +709,6 @@ function closeForgotModal() {
     document.getElementById('forgot-modal').classList.add('hidden');
 }
 
-function refreshForgotCaptcha() {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let code = '';
-    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    document.getElementById('forgot-captcha-img').textContent = code;
-}
-
-function handleResetPassword(e) {
-    e.preventDefault();
-    const email = document.getElementById('forgot-email').value;
-    const captchaInput = document.getElementById('forgot-captcha').value;
-    const captchaText = document.getElementById('forgot-captcha-img').textContent;
-    if (captchaInput.toUpperCase() !== captchaText.toUpperCase()) {
-        alert('验证码输入错误！');
-        document.getElementById('forgot-captcha').value = '';
-        refreshForgotCaptcha();
-        return;
-    }
-    let users = JSON.parse(localStorage.getItem('local_db_users') || '[]');
-    const user = users.find(u => u.email === email);
-    if (!user) {
-        alert('该邮箱未被注册过！');
-        document.getElementById('forgot-email').value = '';
-        document.getElementById('forgot-captcha').value = '';
-        refreshForgotCaptcha();
-        return;
-    }
-    alert(`重置密码邮件已发送至 ${email}，请查收并按提示操作。`);
-    closeForgotModal();
-}
-
 
 
 // 新增：手动触发登录/注册提交（解决表单 onsubmit 失效问题）
@@ -695,6 +717,8 @@ function manualAuthSubmit() {
     const e = { preventDefault: () => {} }; // 模拟事件对象
     handleAuth(e);
 }
+
+
 
 // 原有 handleAuth 函数（替换为之前的修复版）
 function handleAuth(e) {
@@ -706,6 +730,13 @@ function handleAuth(e) {
         const username = document.getElementById('reg-username').value.trim();
         const password = document.getElementById('reg-password').value.trim();
         const confirmPassword = document.getElementById('reg-confirm-password').value.trim();
+
+        // 验证是否勾选同意订阅
+        const isAgree = document.getElementById('reg-subscribe').checked;
+        if (!isAgree) {
+            alert('请勾选同意订阅心界哨兵！');
+            return;
+        } // 这里补全了缺失的闭合大括号
         
         // 1. 验证用户名（必须为2个及以上中文字符）
         const usernamePattern = /^[\u4e00-\u9fa5]{2,}$/;
@@ -792,108 +823,6 @@ function handleAuth(e) {
 
 
 
-// 核心修复：重构 handleAuth 函数，确保验证逻辑优先执行
-function handleAuth(e) {
-    e.preventDefault(); 
-    
-    if (state.authTab === 'reg') {
-        // 1. 获取所有输入值
-        const username = document.getElementById('reg-username').value.trim();
-        const password = document.getElementById('reg-password').value.trim();
-        const confirmPassword = document.getElementById('reg-confirm-password').value.trim();
-        // 新增：获取复选框状态
-        const isSubscribeChecked = document.getElementById('reg-subscribe').checked;
-        
-        // 2. 验证用户名
-        const usernamePattern = /^[\u4e00-\u9fa5]{2,}$/;
-        if (!usernamePattern.test(username)) {
-            alert('用户名必须为2个及以上中文字符！');
-            document.getElementById('reg-username').focus();
-            return;
-        }
-        
-        // 3. 验证密码长度
-        if (password.length < 6) {
-            alert('密码必须至少6位！');
-            document.getElementById('reg-password').focus();
-            return;
-        }
-        
-        // 4. 验证两次密码一致
-        if (password !== confirmPassword) {
-            alert('两次密码输入不一致！');
-            document.getElementById('reg-confirm-password').focus();
-            return;
-        }
-        
-        // 新增：5. 验证复选框是否勾选
-        if (!isSubscribeChecked) {
-            alert('请勾选“同意订阅心界哨兵”后再注册！');
-            document.getElementById('reg-subscribe').focus(); // 聚焦到复选框
-            return;
-        }
-        
-        // 6. 检查用户名是否已存在
-        let users = JSON.parse(localStorage.getItem('local_db_users') || '[]');
-        if (users.find(x => x.u === username)) {
-            alert('用户名已存在，请更换！');
-            document.getElementById('reg-username').focus();
-            return;
-        }
-        
-        // 7. 保存用户信息（包含订阅状态）
-        const subscribe = document.getElementById('reg-subscribe').checked;
-        users.push({ 
-            u: username, 
-            p: password, 
-            subscribe, 
-            createTime: new Date().toLocaleString() 
-        });
-        localStorage.setItem('local_db_users', JSON.stringify(users));
-        
-        // 8. 注册成功提示
-        alert('注册成功！请使用用户名和密码登录');
-        switchAuthTab('login');
-        // 清空输入框
-        document.getElementById('reg-username').value = '';
-        document.getElementById('reg-password').value = '';
-        document.getElementById('reg-confirm-password').value = '';
-        document.getElementById('reg-subscribe').checked = false; // 清空复选框
-        document.getElementById('auth-user').value = username;
-        document.getElementById('auth-pass').value = '';
-        document.getElementById('auth-captcha').value = '';
-        
-    } else {
-        // 登录逻辑（无需修改）
-        const u = document.getElementById('auth-user').value.trim();
-        const p = document.getElementById('auth-pass').value.trim();
-        const captchaInput = document.getElementById('auth-captcha').value.trim().toUpperCase();
-        const captchaText = document.getElementById('captcha').textContent.toUpperCase();
-        
-        if (captchaInput !== captchaText) {
-            alert('验证码输入错误！');
-            document.getElementById('auth-captcha').value = '';
-            refreshCaptcha();
-            document.getElementById('auth-captcha').classList.add('border-error');
-            setTimeout(() => document.getElementById('auth-captcha').classList.remove('border-error'), 2000);
-            return;
-        }
-        
-        let users = JSON.parse(localStorage.getItem('local_db_users') || '[]');
-        const found = users.find(x => x.u === u && x.p === p);
-        if (found) {
-            state.currentUser = found;
-            localStorage.setItem('active_user', JSON.stringify(found));
-            closeModal('auth');
-            renderUI();
-        } else {
-            alert('账号或密码错误！');
-        }
-    }
-}
-
-
-
 function renderUI() {
     const navZone = document.getElementById('nav-user-zone');
     if (state.currentUser) {
@@ -909,20 +838,32 @@ function renderUI() {
 }
 
 function selectPackage(name, price) {
-    state.pendingOrder = { name, price };
-    document.getElementById('pay-amount').innerText = price.toFixed(2);
-    openModal('pay');
+  state.pendingOrder = { name, price };
+  document.getElementById('pay-amount').innerText = price.toFixed(2);
+  openModal('pay'); 
+  // 确认这里没有调用 updateBuyCount() ！！
 }
 
+
 async function confirmPay(method) {
+    // 立即关闭弹窗，防止重复点击
     closeModal('pay');
-    alert(`正在通过${method}支付...`);
-    const record = { id: 'REPORT' + Date.now(), service: state.pendingOrder.name, time: new Date().toLocaleString() };
-    const records = JSON.parse(localStorage.getItem(`reps_${state.currentUser?.u}`) || '[]');
-    records.unshift(record);
-    localStorage.setItem(`reps_${state.currentUser?.u}`, JSON.stringify(records));
-    alert('支付成功！报告已加密发送至专家邮箱，解析完成后将同步至您的记录。');
-    renderUI();
+    
+    // 延迟执行，避免弹窗关闭前的快速操作
+    setTimeout(() => {
+        alert(`正在通过${method}支付...`);
+        
+        // 仅这一次调用，绝对只+1
+        updateBuyCount();
+
+        const record = { id: 'REPORT' + Date.now(), service: state.pendingOrder.name, time: new Date().toLocaleString() };
+        const records = JSON.parse(localStorage.getItem(`reps_${state.currentUser?.u}`) || '[]');
+        records.unshift(record);
+        localStorage.setItem(`reps_${state.currentUser?.u}`, JSON.stringify(records));
+
+        alert('支付成功！报告已加密发送至专家邮箱，解析完成后将同步至您的记录。');
+        renderUI();
+    }, 100); // 100ms延迟，规避重复触发
 }
 
 
@@ -971,7 +912,7 @@ function logout() {
     localStorage.removeItem('active_user'); 
     // 2. 主动跳转到首页（替换为你的首页实际文件名，比如 index.html / home.html 等）
     // 注意：如果首页和当前页在同一目录，直接写文件名即可；如果有路径，需补充完整
-    window.location.href = 'initial.html'; // 这里改成你实际的首页文件名！
+    window.location.href = 'xinjieshaobing.html'; // 这里改成你实际的首页文件名！
 }
 // 检查登录状态，再跳转到产品详情页
 function checkLoginThenGoToProduct() {
@@ -994,23 +935,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// 补充：页面加载时验证文件名适配（可选）
-window.onload = () => {
-    initCarousel();
-    initScrollAnimation();
-    initResearchChart();
-    initMobileMenu();
-    initNavbarScroll();
-    renderUI();
-    refreshCaptcha();
-    refreshForgotCaptcha();
-    
-    // 可选：如果产品详情页文件名修改，同步更新跳转链接
-    const productLink = document.querySelector('a[onclick*="product.html"]');
-    if (productLink) {
-        productLink.setAttribute('onclick', "location.href='你的产品详情页实际文件名.html'");
-    }
-};
+
+
+
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', e => {
         e.preventDefault();
