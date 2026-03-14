@@ -172,15 +172,20 @@
     <!-- 顶部导航栏 -->
     <nav class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="navbar">
         <div class="container h-16 flex justify-between items-center px-4">
-            <div class="flex items-center cursor-pointer" onclick="location.href='initial.html'">
-                <span class="text-2xl font-bold text-primary"><i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵</span>
+            <div class="flex items-center cursor-pointer" >
+                <span class="text-2xl font-bold text-primary">
+                    <i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵-AI驱动的国人PM心血管未病先防平台
+                    <span class="text-sm text-gray-500 ml-4 font-normal hidden sm:inline">
+                        平台访问量：<span class="visit-count">3244</span> | 产品购买量：<span class="buy-count">2310</span>
+                    </span>
+                </span>
             </div>
             
             <div class="hidden md:flex items-center space-x-8">
-                <a href="initial.html#home" class="text-gray-700 hover:text-primary transition-colors">首页</a>
-                <a href="initial.html#product" class="text-gray-700 hover:text-primary transition-colors">产品介绍</a>
-                <a href="initial.html#research" class="text-gray-700 hover:text-primary transition-colors">最新研究</a>
-                <a href="initial.html#about" class="text-gray-700 hover:text-primary transition-colors">关于我们</a>
+                <a href="xinjieshaobing.html#home" class="text-gray-700 hover:text-primary transition-colors">首页</a>
+                <a href="xinjieshaobing.html#product" class="text-gray-700 hover:text-primary transition-colors">产品介绍</a>
+                <a href="xinjieshaobing.html#research" class="text-gray-700 hover:text-primary transition-colors">最新研究</a>
+                <a href="xinjieshaobing.html#about" class="text-gray-700 hover:text-primary transition-colors">关于我们</a>
             </div>
             
             <div id="nav-user-zone" class="flex items-center">
@@ -197,10 +202,10 @@
         
         <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
             <div class="container py-4 flex flex-col space-y-4 px-4">
-                <a href="initial.html#home" class="text-gray-700 hover:text-primary py-2 transition-colors">首页</a>
-                <a href="initial.html#product" class="text-gray-700 hover:text-primary py-2 transition-colors">产品介绍</a>
-                <a href="initial.html#research" class="text-gray-700 hover:text-primary py-2 transition-colors">最新研究</a>
-                <a href="initial.html#about" class="text-gray-700 hover:text-primary py-2 transition-colors">关于我们</a>
+                <a href="xinjieshaobing.html#home" class="text-gray-700 hover:text-primary py-2 transition-colors">首页</a>
+                <a href="xinjieshaobing.html#product" class="text-gray-700 hover:text-primary py-2 transition-colors">产品介绍</a>
+                <a href="xinjieshaobing.html#research" class="text-gray-700 hover:text-primary py-2 transition-colors">最新研究</a>
+                <a href="xinjieshaobing.html#about" class="text-gray-700 hover:text-primary py-2 transition-colors">关于我们</a>
             </div>
         </div>
     </nav>
@@ -440,6 +445,49 @@
     </footer>
 
 <script>
+// ========== 全局统一统计：访问量 + 购买量（核心同步逻辑） ==========
+function getStats() {
+    let def = { visitCount: 3244, buyCount: 2310 };
+    try {
+        let s = localStorage.getItem('platform_stats');
+        return s ? JSON.parse(s) : def;
+    } catch (e) {
+        return def;
+    }
+}
+
+function saveStats(stats) {
+    localStorage.setItem('platform_stats', JSON.stringify(stats));
+}
+
+// 页面加载时自动刷新所有数字
+function syncStats() {
+    let s = getStats();
+    // 更新访问量
+    let visitEls = document.querySelectorAll('.visit-count');
+    visitEls.forEach(el => el.textContent = s.visitCount);
+
+    // 更新购买量
+    let buyEls = document.querySelectorAll('.buy-count');
+    buyEls.forEach(el => el.textContent = s.buyCount);
+}
+
+// 访问量 +1（一般在首页加载时调用）
+function addVisitCount() {
+    let s = getStats();
+    s.visitCount += 1;
+    saveStats(s);
+    syncStats();
+}
+
+// 购买量 +1（点击订购/咨询时调用）
+function addBuyCount() {
+    let s = getStats();
+    s.buyCount += 1;
+    saveStats(s);
+    syncStats();
+}
+
 // 全局变量
 let currentOrderType = '';
 let currentOrderId = '';
@@ -453,6 +501,9 @@ let userInfo = {
 
 // 页面加载初始化
 document.addEventListener('DOMContentLoaded', function () {
+    // 第一步：先同步统计数字（核心！）
+    syncStats();
+
     // 移动端菜单
     const menuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -612,6 +663,8 @@ function logoutAndRedirect() {
 // 订单相关功能（保留原有+优化后的效果）
 function openOrderModal(type) {
     currentOrderType = type;
+    // 购买量+1（如果是订购/咨询）
+    addBuyCount();
     if (type === '政府版' || type === '卫健委版') {
         openConsultSuccessModal();
         return;
@@ -621,6 +674,8 @@ function openOrderModal(type) {
 
 function completePayment() {
     closePaymentModal();
+    // 购买量+1（兜底）
+    addBuyCount();
     alert('支付成功！订单已生成');
     window.location.href = 'center.html';
 }
