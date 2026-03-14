@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心界哨兵 - AI驱动的国人PM心血管未病先防平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --primary: #3D82AC; 
+            --primary-light: #5a99c4;
+            --primary-dark: #2a6085;
+            --secondary: #6b7280; 
+            --white: #ffffff;
+            --black: #1f2937;
+        }
+        .bg-primary { background-color: var(--primary); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+        .hover\:bg-primary-light:hover { background-color: var(--primary-light); }
+        .hover\:text-primary-light:hover { color: var(--primary-light); }
+        .float-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .float-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hover-float {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-float:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px -5px rgba(61, 130, 172, 0.3);
+        }
+        .text-float {
+            animation: textFloat 3s ease-in-out infinite;
+        }
+        @keyframes textFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake { 
+            0%, 100% { transform: translateX(0); } 
+            25% { transform: translateX(-5px); } 
+            75% { transform: translateX(5px); } 
+        }
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel-slide {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-item {
+            min-width: 100%;
+            height: 600px;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .carousel-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        .carousel-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .carousel-btn.prev { left: 20px; }
+        .carousel-btn.next { right: 20px; }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(61, 130, 172, 0.2);
+        }
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 26px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(61, 130, 172, 0.2);
+        }
+        .input-field {
+            border: 1px solid #d1d5db;
+            padding: 12px 18px;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(61, 130, 172, 0.1);
+        }
+        .border-error { 
+            border-color: #3D82AC !important; 
+            box-shadow: 0 0 0 2px rgba(61, 130, 172, 0.2) !important; 
+        }
+        .hidden { display: none; }
+        .section-padding {
+            padding: 100px 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(61, 130, 172, 0.1);
+        }
+        .img-zoom {
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .img-zoom img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .img-zoom:hover img {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+<nav class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="navbar">
+    <div class="container h-16 flex justify-between items-center">
+        <div class="flex items-center cursor-pointer" >
+            <span class="text-2xl font-bold text-primary">
+    <i class="fa-solid fa-heart-pulse mr-2"></i> 心界哨兵-AI驱动的国人PM心血管未病先防平台
+    <span class="text-sm text-gray-500 ml-4 font-normal hidden sm:inline">
+        平台访问量：<span id="visit-count">25711</span> | 产品购买量：<span id="buy-count">716</span>
+    </span>
+</span>
+        </div>
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="#home" class="text-gray-700 hover:text-primary transition-colors">首页</a>
+            <a href="#product" class="text-gray-700 hover:text-primary transition-colors">产品介绍</a>
+            <a href="#research" class="text-gray-700 hover:text-primary transition-colors">最新研究</a>
+            <a href="#about" class="text-gray-700 hover:text-primary transition-colors">关于我们</a>
+        </div>
+        <div id="nav-user-zone" class="flex items-center">
+            <button onclick="openModal('login')" class="btn-outline text-sm px-4 py-2">登录 / 注册</button>
+        </div>
+        <button class="md:hidden text-gray-70 text-xl" id="mobile-menu-btn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+    <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
+        <div class="container py-4 flex flex-col space-y-4">
+            <a href="#home" class="text-gray-700 hover:text-primary py-2 transition-colors">首页</a>
+            <a href="#product" class="text-gray-700 hover:text-primary py-2 transition-colors">产品介绍</a>
+            <a href="#research" class="text-gray-700 hover:text-primary py-2 transition-colors">最新研究</a>
+            <a href="#about" class="text-gray-700 hover:text-primary py-2 transition-colors">关于我们</a>
+        </div>
+    </div>
+</nav>
+
+<section id="home" class="relative overflow-hidden">
+    <div class="carousel-container">
+        <div class="carousel-slide" id="carousel-slide">
+            <div class="carousel-item relative h-[600px] md:h-screen flex items-center justify-center">
+                <div class="absolute inset-0 z-0">
+                    <img src="1.1.jpg" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90"></div>
+                </div>
+                <div class="container mx-auto px-4 z-10 text-center md:text-left md:max-w-5xl">
+                       <div class="w-full md:w-full mx-auto md:mx-0">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-white text-float">心界哨兵-AI驱动的国人PM心血管未病先防平台</h1>
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold mb-8 text-white">多组学融合技术</h2>
+                        <p class="text-lg mb-8 max-w-lg text-white/90">实现 “基因 - 蛋白 - 细胞”全维度标志物体系构建，弥补单一技术局限性，为您的心血管健康保驾护航</p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item relative h-[600px] md:h-screen flex items-center justify-center">
+                <div class="absolute inset-0 z-0">
+                    <img src="2.jpg" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90"></div>
+                </div>
+                <div class="container mx-auto px-4 z-10 text-center md:text-left md:max-w-5xl">
+                    <div class="w-full md:w-1/2 mx-auto md:mx-0">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-white text-float">智能算法引擎</h1>
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold mb-8 text-white">足不出户，专业守护</h2>
+                        <p class="text-lg mb-8 max-w-lg text-white/90">构建 “GNN 图神经网络 + XGBoost+Transformer” 
+复合型算法框架，精准分析数据实现远程数据采集，医生实时分析，为您提供个性化健康建议</p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item relative h-[600px] md:h-screen flex items-center justify-center">
+                <div class="absolute inset-0 z-0">
+                    <img src="3.jpg" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary-dark/90 to-blue-900/90"></div>
+                </div>
+                <div class="container mx-auto px-4 z-10 text-center md:text-left md:max-w-5xl">
+                    <div class="w-full md:w-1/2 mx-auto md:mx-0">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-white text-float">隐私风险保障</h1>
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold mb-8 text-white">精准对接，安全无忧</h2>
+                        <p class="text-lg mb-8 max-w-lg text-white/90">采用联邦学习框架，契合《个人信息保护法》《数据安全法》要求</p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item relative h-[600px] md:h-screen flex items-center justify-center">
+                <div class="absolute inset-0 z-0">
+                    <img src="4.jpg" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90"></div>
+                </div>
+                <div class="container mx-auto px-4 z-10 text-center md:text-left md:max-w-5xl">
+                    <div class="w-full md:w-1/2 mx-auto md:mx-0">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-black text-float">全链条闭环设计</h1>
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold mb-8 text-black">专业解读，一目了然</h2>
+                        <p class="text-lg mb-8 max-w-lg text-black/90">覆盖 “数据采集- 智能分析- 风险预警- 个性化干预” 全流程，打破传统健康服务 “检测与干预脱节” 的弊端</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-btn prev" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></div>
+        <div class="carousel-btn next" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></div>
+        <div class="carousel-dots" id="carousel-dots">
+            <div class="carousel-dot active" onclick="goToSlide(0)"></div>
+            <div class="carousel-dot" onclick="goToSlide(1)"></div>
+            <div class="carousel-dot" onclick="goToSlide(2)"></div>
+            <div class="carousel-dot" onclick="goToSlide(3)"></div>
+        </div>
+    </div>
+</section>
+
+<section id="product" class="section-padding bg-white float-up">
+    <div class="container">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-black mb-6">
+                    <span class="text-primary">心界哨兵</span> - 产品及解决方案
+                </h2>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                    心界哨兵是一套集硬件采集、软件分析、AI预警、专家解读于一体的心血管健康管理解决方案。
+                    我们致力于通过先进的医疗科技，让每个人都能享受到专业、便捷、精准的心血管健康管理服务。
+                </p>
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-4">
+                        <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                        <div><h3 class="font-semibold text-lg">实时数据监测</h3><p class="text-gray-600">24小时不间断采集心率、血压、血氧等核心健康数据</p></div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                        <div><h3 class="font-semibold text-lg">AI智能分析</h3><p class="text-gray-600">基于百万级临床数据训练的AI模型，精准识别异常指标</p></div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i class="fa-solid fa-check-circle text-primary text-xl mt-1"></i>
+                        <div><h3 class="font-semibold text-lg">多端同步查看</h3><p class="text-gray-600">手机、平板、电脑多端数据同步，随时随地查看健康状况</p></div>
+                    </div>
+                </div>
+                <a href="javascript:void(0)" onclick="checkLoginThenGoToProduct()" class="btn-primary hover-float">了解更多</a>
+            </div>
+            <div class="md:w-1/2 grid grid-cols-2 gap-6">
+                <div class="card p-6 hover-float"><div class="img-zoom h-48 mb-4"><img src="https://picsum.photos/id/10/600/400"></div><h3 class="font-bold text-lg mb-2">智能数据录入</h3><p class="text-gray-600 text-sm">无感监测，收集环境污染指标以及客户的体检报告</p></div>
+                <div class="card p-6 hover-float"><div class="img-zoom h-48 mb-4"><img src="https://picsum.photos/id/11/600/400"></div><h3 class="font-bold text-lg mb-2">健康数据分析</h3><p class="text-gray-600 text-sm">专业算法分析，生成可视化健康报告，趋势一目了然</p></div>
+                <div class="card p-6 hover-float"><div class="img-zoom h-48 mb-4"><img src="https://picsum.photos/id/12/600/400"></div><h3 class="font-bold text-lg mb-2">专家在线解读</h3><p class="text-gray-600 text-sm">心血管专家团队在线解读报告，提供专业指导建议</p></div>
+                <div class="card p-6 hover-float"><div class="img-zoom h-48 mb-4"><img src="https://picsum.photos/id/13/600/400"></div><h3 class="font-bold text-lg mb-2">风险预警系统</h3><p class="text-gray-600 text-sm">提前预警潜在心血管风险，为未病先防提供较为准确的指南</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="research" class="section-padding bg-gray-50 float-up">
+    <div class="container">
+        <div class="flex flex-col md:flex-row-reverse items-center gap-12">
+            <div class="md:w-1/2">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-black mb-6">
+                    <span class="text-primary">最新研究</span> 与 技术突破
+                </h2>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                    我们的研发团队持续投入心脏健康监测技术的研究与创新，不断提升产品的准确性和用户体验，为用户提供最前沿的健康管理服务。
+                </p>
+                <div class="space-y-6 mb-8">
+                    <div class="card p-5 hover-float"><h3 class="font-bold text-lg text-primary mb-2">AI算法准确率提升至98.7%</h3><p class="text-gray-600">最新研究成果，AI识别心血管异常的准确率达到行业领先水平</p><div class="mt-3 text-sm text-gray-500">2024-03-15</div></div>
+                    <div class="card p-5 hover-float"><h3 class="font-bold text-lg text-primary mb-2">分析监测技术突破</h3><p class="text-gray-600">足不出户，仅上传报告，线下直接对接血液样本，72小时出个性化报告</p><div class="mt-3 text-sm text-gray-500">2024-01-28</div></div>
+                    <div class="card p-5 hover-float"><h3 class="font-bold text-lg text-primary mb-2">远程诊断系统上线</h3><p class="text-gray-600">与各大社区合作，实现远程心血管诊断，快速完善技术</p><div class="mt-3 text-sm text-gray-500">2023-12-10</div></div>
+                </div>
+            </div>
+            <div class="md:w-1/2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-5 hover-float"><div class="img-zoom h-60 mb-4"><img src="https://picsum.photos/id/20/600/800"></div><h3 class="font-bold text-lg mb-2">研发实验室</h3><p class="text-gray-600 text-sm">配备先进的研发设备和专业团队</p></div>
+                    <div class="card p-5 hover-float"><div class="h-60 mb-4 flex items-center justify-center"><canvas id="researchChart" width="400" height="300"></canvas></div><h3 class="font-bold text-lg mb-2">技术准确率趋势</h3><p class="text-gray-600 text-sm">近三年AI诊断准确率持续提升，已达到临床应用标准</p></div>
+                    <div class="col-span-1 md:col-span-2 card p-5 hover-float"><div class="img-zoom h-40 mb-4"><img src="5.jpg"></div><h3 class="font-bold text-lg mb-2">学术合作</h3><p class="text-gray-600 text-sm">与山东平度，莱西社区，河北石家庄柴油化工厂建立长期合作关系，精进研究成果</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<section id="about" class="section-padding bg-white float-up">
+    <div class="container">
+        <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-black mb-4">
+                关于 <span class="text-primary">心界哨兵</span>
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                心界哨兵计划成立于2026年，是一家专注于心血管健康管理的国家级高新技术企业，
+                致力于通过科技创新，让优质的心血管健康管理服务触手可及。
+            </p>
+        </div>
+        <!-- 修改grid布局：移动端1列，桌面端2列并居中 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="card p-8 hover-float">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6"><i class="fa-solid fa-users text-primary text-2xl"></i></div>
+                <h3 class="font-bold text-xl mb-4">核心团队</h3><p class="text-gray-600 mb-6">由青岛大学公共卫生学院，经济学院，青岛医学院，商学院，计算机科学技术学院组成的核心团队</p>
+            </div>
+            <div class="card p-8 hover-float">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6"><i class="fa-solid fa-phone text-primary text-2xl"></i></div>
+                <h3 class="font-bold text-xl mb-4">联系我们</h3>
+                <div class="space-y-3 text-gray-600 mb-6">
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-map-marker-alt text-primary"></i><span>山东省青岛市市南区青岛大学</span></div>
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-phone-alt text-primary"></i><span>19862893805</span></div>
+                    <div class="flex items-center gap-3"><i class="fa-solid fa-envelope text-primary"></i><span>liyijiao0206@163.com</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<footer class="bg-black text-white pt-16 pb-8">
+  <div class="container">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <div class="col-span-1 md:col-span-4 text-center">
+        <h3 class="text-2xl font-bold mb-6 flex items-center justify-center"><i class="fa-solid fa-heart-pulse mr-2 text-primary"></i> 心界哨兵</h3>
+        <p class="text-gray-400 mb-6 text-center">用心守护每一次心跳，用科技赋能健康生活</p>
+        <p class="text-gray-500 text-sm mb-8 text-center">© 2024 心界哨兵</p>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+      <div class="flex justify-center space-x-6">
+        <a href="#home" class="hover:text-primary transition-colors">首页</a>
+        <a href="#product" class="hover:text-primary transition-colors">产品介绍</a>
+        <a href="#research" class="hover:text-primary transition-colors">最新研究</a>
+        <a href="#about" class="hover:text-primary transition-colors">关于我们</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- 修复Bug后的登录/注册模态框 -->
+<div id="auth-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[100] backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-md p-8 relative">
+        <button onclick="closeModal('auth')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+        <h2 class="text-3xl font-bold text-center mb-8" id="auth-title">登录</h2>
+        
+
+
+        <!-- 核心修复1：表单增加 autocomplete="off" 避免浏览器干扰 -->
+      <!-- 替换整个 auth-form 表单 -->
+<form id="auth-form" class="space-y-4" autocomplete="off">
+    <!-- 登录专用输入区域（默认显示） -->
+    <div id="login-fields" class="space-y-4">
+        <div><input type="text" id="auth-user" placeholder="用户名/邮箱" required class="input-field bg-gray-50 border-none"></div>
+        <div class="relative">
+            <input type="password" id="auth-pass" placeholder="密码" required oninput="validatePassword(this)" class="input-field bg-gray-50 border-none pr-10">
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-eye" id="password-icon"></i></button>
+        </div>
+        <div class="flex items-center gap-2">
+            <input type="text" id="auth-captcha" placeholder="验证码" required class="input-field flex-1 bg-gray-50 border-none">
+            <div class="w-32 h-12 bg-gray-50 border border-gray-200 flex items-center justify-center text-lg tracking-widest select-none" id="captcha" onclick="refreshCaptcha()">HHA4H</div>
+            <button type="button" onclick="refreshCaptcha()" class="text-gray-400 hover:text-primary"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
+        <div class="flex justify-between items-center text-sm text-gray-500">
+        </div>
+    </div>
+
+    <!-- 注册专用输入区域（默认隐藏） -->
+    <div id="reg-fields" class="hidden space-y-4">
+        <div><input type="text" id="reg-username" placeholder="用户名（必须中文）" required class="input-field bg-gray-50 border-none"></div>
+        <div class="relative">
+            <input type="password" id="reg-password" placeholder="密码（至少6位）" required class="input-field bg-gray-50 border-none pr-10">
+            <button type="button" onclick="toggleRegPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-eye" id="reg-password-icon"></i></button>
+        </div>
+        <div class="relative">
+            <input type="password" id="reg-confirm-password" placeholder="确认密码" required class="input-field bg-gray-50 border-none pr-10">
+            <button type="button" onclick="toggleRegConfirmPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-eye" id="reg-confirm-password-icon"></i></button>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
+            <input type="checkbox" id="reg-subscribe" class="rounded text-[#3D82AC]">
+            <span>请确认是否同意订阅心界哨兵</span>
+        </label>
+    </div>
+
+    <!-- 底部按钮组（共用） -->
+    <div class="flex gap-4 mt-6">
+        <!-- 关键修改：直接绑定 onclick 事件，绕过表单 onsubmit 问题 -->
+        <button type="button" id="auth-submit-btn" onclick="manualAuthSubmit()" class="flex-1 py-3 bg-[#3D82AC] text-white font-bold rounded hover:bg-[#2a6085] transition-colors">立即登录</button>
+        <button type="button" onclick="switchAuthTab(state.authTab === 'login' ? 'reg' : 'login')" class="flex-1 py-3 bg-white text-[#3D82AC] border border-[#3D82AC] font-bold rounded hover:bg-blue-50 transition-colors">注册</button>
+    </div>
+</form>
+
+
+
+    </div>
+</div>
+
+<div id="pay-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[110]">
+    <div class="bg-white rounded-2xl p-8 w-80 text-center">
+        <h3 class="font-bold text-lg mb-4">模拟支付中心</h3>
+        <div class="text-3xl font-black text-orange-500 mb-6">￥<span id="pay-amount">0.00</span></div>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <button onclick="confirmPay('微信')" class="border rounded-lg p-3 hover:bg-green-50 hover-float"><i class="fa-brands fa-weixin text-green-500 text-2xl"></i></button>
+            <button onclick="confirmPay('支付宝')" class="border rounded-lg p-3 hover:bg-blue-50 hover-float"><i class="fa-brands fa-alipay text-blue-500 text-2xl"></i></button>
+        </div>
+        <button onclick="closeModal('pay')" class="text-gray-400 text-sm">暂不支付</button>
+    </div>
+</div>
+
+<script>
+// 在 <script> 标签的最开头定义
+const DEFAULT_STATS = { visitCount: 25711, buyCount: 716 };
+
+// ========== 统计数据核心函数 ==========
+// ========== 统计数据核心函数 ==========
+function syncStatsEverywhere() {
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || '{"visitCount": 25711, "buyCount": 716}');
+    if (document.getElementById('visit-count'))
+        document.getElementById('visit-count').textContent = stats.visitCount;
+    if (document.getElementById('buy-count'))
+        document.getElementById('buy-count').textContent = stats.buyCount;
+
+
+}
+
+
+// 修改 initStats 函数内部逻辑
+function initStats() {
+    if (window.statsInited) return;
+    window.statsInited = true;
+
+    // 使用统一的变量名
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || JSON.stringify(DEFAULT_STATS));
+    
+    stats.visitCount += 1;
+    localStorage.setItem('platform_stats', JSON.stringify(stats));
+    
+    // 更新显示
+    document.getElementById('visit-count').textContent = stats.visitCount;
+    document.getElementById('buy-count').textContent = stats.buyCount;
+    return stats;
+}
+
+
+
+
+// 更新购买量（供product.html调用）
+// 唯一确定的更新购买量函数（原子操作，绝对只+1）
+function updateBuyCount() {
+    if (window.buyLocked) return;
+    window.buyLocked = true;
+
+    let stats = JSON.parse(localStorage.getItem('platform_stats') || '{"visitCount": 25711, "buyCount": 716}');
+    stats.buyCount += 1;
+
+    localStorage.setItem('platform_stats', JSON.stringify(stats));
+    document.getElementById('buy-count').textContent = stats.buyCount;
+
+    setTimeout(() => { window.buyLocked = false; }, 1000);
+}
+
+
+
+
+
+// 全局状态变量（之前漏了，导致轮播等功能报错）
+let state = {
+    currentUser: JSON.parse(localStorage.getItem('active_user') || 'null'),
+    authTab: 'login',
+    pendingOrder: { name: '基础解析', price: 9.9 },
+    currentSlide: 0,
+    slideInterval: null
+};
+
+
+window.onload = () => {
+    initStats(); // 只执行这一次，完成访问量+1和页面显示
+    initCarousel(); // 保留轮播
+    initScrollAnimation(); // 保留滚动动画
+    initResearchChart(); // 保留图表
+    initMobileMenu(); // 保留移动端菜单
+    initNavbarScroll(); // 保留导航栏滚动
+    renderUI(); // 保留登录状态渲染
+    refreshCaptcha(); // 保留验证码
+    refreshForgotCaptcha(); // 保留忘记密码验证码
+};
+
+
+function initNavbarScroll() {
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+        } else {
+            navbar.classList.remove('bg-white/95', 'backdrop-blur-sm', 'shadow-lg');
+        }
+    });
+}
+
+function initMobileMenu() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        const isOpen = !mobileMenu.classList.contains('hidden');
+        menuBtn.innerHTML = isOpen ? '<i class="fa-solid fa-times"></i>' : '<i class="fa-solid fa-bars"></i>';
+    });
+}
+
+function initCarousel() {
+    state.slideInterval = setInterval(nextSlide, 5000);
+    const carousel = document.querySelector('.carousel-container');
+    carousel.addEventListener('mouseenter', () => clearInterval(state.slideInterval));
+    carousel.addEventListener('mouseleave', () => state.slideInterval = setInterval(nextSlide, 5000));
+    updateCarouselDots();
+}
+
+function updateCarousel() {
+    const slide = document.getElementById('carousel-slide');
+    slide.style.transform = `translateX(-${state.currentSlide * 100}%)`;
+    updateCarouselDots();
+}
+
+function updateCarouselDots() {
+    const dots = document.querySelectorAll('.carousel-dot');
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === state.currentSlide));
+}
+
+function nextSlide() {
+    const slides = document.querySelectorAll('.carousel-item');
+    state.currentSlide = (state.currentSlide + 1) % slides.length;
+    updateCarousel();
+}
+
+function prevSlide() {
+    const slides = document.querySelectorAll('.carousel-item');
+    state.currentSlide = (state.currentSlide - 1 + slides.length) % slides.length;
+    updateCarousel();
+}
+
+function goToSlide(index) {
+    state.currentSlide = index;
+    updateCarousel();
+}
+
+function initScrollAnimation() {
+    const floatElements = document.querySelectorAll('.float-up');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => e.isIntersecting && e.target.classList.add('active'));
+    }, { threshold: 0.1 });
+    floatElements.forEach(el => observer.observe(el));
+}
+
+function initResearchChart() {
+    const ctx = document.getElementById('researchChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['2022', '2023 Q1', '2023 Q2', '2023 Q3', '2023 Q4', '2024 Q1'],
+            datasets: [{
+                label: 'AI诊断准确率 (%)',
+                data: [92.5, 94.2, 95.8, 97.1, 98.0, 98.7],
+                borderColor: '#3D82AC',
+                backgroundColor: 'rgba(61, 130, 172, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { min: 90, max: 100 } } }
+    });
+}
+
+
+
+function validatePassword(input) {
+    if (input.value.length > 0 && input.value.length <= 9) {
+        input.classList.add('border-error');
+    } else {
+        input.classList.remove('border-error');
+    }
+}
+
+function checkLoginBeforeDetail() {
+    if (!state.currentUser) {
+        alert('请先登录后再查看详情');
+        openModal('login');
+    } else {
+        location.hash = '#detail';
+    }
+}
+
+
+
+function togglePassword() {
+    const passInput = document.getElementById('auth-pass');
+    const icon = document.getElementById('password-icon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+function refreshCaptcha() {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let code = '';
+    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('captcha').textContent = code;
+}
+
+
+function toggleRegPassword() {
+    const passInput = document.getElementById('reg-password');
+    const icon = document.getElementById('reg-password-icon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+
+function toggleRegConfirmPassword() {
+    const passInput = document.getElementById('reg-confirm-password');
+    const icon = document.getElementById('reg-confirm-password-icon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+function openForgotModal() {
+    closeModal('auth');
+    document.getElementById('forgot-modal').classList.remove('hidden');
+}
+
+function closeForgotModal() {
+    document.getElementById('forgot-modal').classList.add('hidden');
+}
+
+
+
+// 新增：手动触发登录/注册提交（解决表单 onsubmit 失效问题）
+function manualAuthSubmit() {
+    // 模拟表单提交，直接调用 handleAuth 逻辑
+    const e = { preventDefault: () => {} }; // 模拟事件对象
+    handleAuth(e);
+}
+
+
+
+// 原有 handleAuth 函数（替换为之前的修复版）
+function handleAuth(e) {
+    e.preventDefault(); // 阻止表单默认提交行为
+    
+    // 先判断当前是登录还是注册模式
+    if (state.authTab === 'reg') {
+        // 注册逻辑：先获取所有输入值
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const confirmPassword = document.getElementById('reg-confirm-password').value.trim();
+
+        // 验证是否勾选同意订阅
+        const isAgree = document.getElementById('reg-subscribe').checked;
+        if (!isAgree) {
+            alert('请勾选同意订阅心界哨兵！');
+            return;
+        } // 这里补全了缺失的闭合大括号
+        
+        // 1. 验证用户名（必须为2个及以上中文字符）
+        const usernamePattern = /^[\u4e00-\u9fa5]{2,}$/;
+        if (!usernamePattern.test(username)) {
+            alert('用户名必须为2个及以上中文字符！');
+            document.getElementById('reg-username').focus(); // 聚焦到用户名输入框
+            return; // 终止函数，不执行后续逻辑
+        }
+        
+        // 2. 验证密码长度（至少6位）
+        if (password.length < 6) {
+            alert('密码必须至少6位！');
+            document.getElementById('reg-password').focus(); // 聚焦到密码输入框
+            return; // 终止函数
+        }
+        
+        // 3. 验证两次密码一致
+        if (password !== confirmPassword) {
+            alert('两次密码输入不一致！');
+            document.getElementById('reg-confirm-password').focus(); // 聚焦到确认密码框
+            return; // 终止函数
+        }
+        
+        // 4. 检查用户名是否已存在
+        let users = JSON.parse(localStorage.getItem('local_db_users') || '[]');
+        if (users.find(x => x.u === username)) {
+            alert('用户名已存在，请更换！');
+            document.getElementById('reg-username').focus();
+            return;
+        }
+        
+        // 5. 所有验证通过，保存用户信息（持久化）
+        const subscribe = document.getElementById('reg-subscribe').checked;
+        users.push({ 
+            u: username, 
+            p: password, 
+            subscribe, 
+            createTime: new Date().toLocaleString() 
+        });
+        localStorage.setItem('local_db_users', JSON.stringify(users));
+        
+        // 6. 注册成功提示+切换到登录页
+        alert('注册成功！请使用用户名和密码登录');
+        switchAuthTab('login'); // 切换到登录标签
+        // 清空注册输入框，填充用户名到登录框
+        document.getElementById('reg-username').value = '';
+        document.getElementById('reg-password').value = '';
+        document.getElementById('reg-confirm-password').value = '';
+        document.getElementById('auth-user').value = username;
+        document.getElementById('auth-pass').value = '';
+        document.getElementById('auth-captcha').value = '';
+        
+    } else {
+        // 登录逻辑（保留原有代码）
+        const u = document.getElementById('auth-user').value.trim();
+        const p = document.getElementById('auth-pass').value.trim();
+        const captchaInput = document.getElementById('auth-captcha').value.trim().toUpperCase();
+        const captchaText = document.getElementById('captcha').textContent.toUpperCase();
+        
+        // 验证码验证
+        if (captchaInput !== captchaText) {
+            alert('验证码输入错误！');
+            document.getElementById('auth-captcha').value = '';
+            refreshCaptcha();
+            document.getElementById('auth-captcha').classList.add('border-error');
+            setTimeout(() => document.getElementById('auth-captcha').classList.remove('border-error'), 2000);
+            return;
+        }
+        
+        // 账号密码验证
+        let users = JSON.parse(localStorage.getItem('local_db_users') || '[]');
+        const found = users.find(x => x.u === u && x.p === p);
+        if (found) {
+            state.currentUser = found;
+            localStorage.setItem('active_user', JSON.stringify(found));
+            closeModal('auth');
+            renderUI();
+        } else {
+            alert('账号或密码错误！');
+        }
+    }
+}
+
+
+
+
+function renderUI() {
+    const navZone = document.getElementById('nav-user-zone');
+    if (state.currentUser) {
+        // 关键修改：给用户名添加点击事件，跳转至 center.html
+        navZone.innerHTML = `
+            <div class="flex items-center gap-4">
+                <span class="hidden md:inline text-gray-700 cursor-pointer" onclick="window.location.href='center.html'">欢迎, ${state.currentUser.u}</span>
+                <button onclick="logout()" class="btn-outline text-sm px-4 py-2"><i class="fa-solid fa-sign-out-alt mr-1"></i> 退出</button>
+            </div>`;
+    } else {
+        navZone.innerHTML = `<button onclick="openModal('login')" class="btn-outline text-sm px-4 py-2">登录 / 注册</button>`;
+    }
+}
+
+function selectPackage(name, price) {
+  state.pendingOrder = { name, price };
+  document.getElementById('pay-amount').innerText = price.toFixed(2);
+  openModal('pay'); 
+  // 确认这里没有调用 updateBuyCount() ！！
+}
+
+
+async function confirmPay(method) {
+    // 立即关闭弹窗，防止重复点击
+    closeModal('pay');
+    
+    // 延迟执行，避免弹窗关闭前的快速操作
+    setTimeout(() => {
+        alert(`正在通过${method}支付...`);
+        
+        // 仅这一次调用，绝对只+1
+        updateBuyCount();
+
+        const record = { id: 'REPORT' + Date.now(), service: state.pendingOrder.name, time: new Date().toLocaleString() };
+        const records = JSON.parse(localStorage.getItem(`reps_${state.currentUser?.u}`) || '[]');
+        records.unshift(record);
+        localStorage.setItem(`reps_${state.currentUser?.u}`, JSON.stringify(records));
+
+        alert('支付成功！报告已加密发送至专家邮箱，解析完成后将同步至您的记录。');
+        renderUI();
+    }, 100); // 100ms延迟，规避重复触发
+}
+
+
+
+// 核心修复5：优化标签切换函数，确保DOM元素正确显示/隐藏
+function switchAuthTab(tab) {
+    state.authTab = tab;
+    const isLogin = tab === 'login';
+    
+    // 1. 切换标题
+    document.getElementById('auth-title').innerText = isLogin ? '登录' : '注册';
+    // 2. 切换输入区域显示/隐藏
+    document.getElementById('login-fields').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block';
+    // 3. 切换提交按钮文本（关键）
+    const submitBtn = document.getElementById('auth-submit-btn');
+    if (submitBtn) {
+        submitBtn.innerText = isLogin ? '立即登录' : '创建账号并注册';
+    }
+    // 4. 重置表单错误状态
+    const passInput = document.getElementById('auth-pass');
+    if (passInput) passInput.classList.remove('border-error');
+}
+
+
+
+// 核心修复6：简化模态框操作函数，确保能正确显示/隐藏
+function openModal(t) { 
+    if(t==='login') {
+        document.getElementById('auth-modal').style.display = 'flex';
+        // 打开登录框时重置为登录标签
+        switchAuthTab('login');
+    }
+    if(t==='pay') document.getElementById('pay-modal').style.display = 'flex';
+}
+
+function closeModal(t) { 
+    if(t === 'auth') document.getElementById('auth-modal').style.display = 'none';
+    if(t === 'pay') document.getElementById('pay-modal').style.display = 'none';
+    if(t === 'forgot') closeForgotModal();
+}
+
+// 修复退出登录跳转问题（核心修改）
+function logout() { 
+    // 1. 清除登录状态
+    localStorage.removeItem('active_user'); 
+    // 2. 主动跳转到首页（替换为你的首页实际文件名，比如 index.html / home.html 等）
+    // 注意：如果首页和当前页在同一目录，直接写文件名即可；如果有路径，需补充完整
+    window.location.href = 'xinjieshaobing.html'; // 这里改成你实际的首页文件名！
+}
+// 检查登录状态，再跳转到产品详情页
+function checkLoginThenGoToProduct() {
+    // 判断是否已登录（读取localStorage中的登录状态）
+    if (!state.currentUser) {
+        alert('请先登录后再查看产品详情！');
+        openModal('login'); // 弹出登录框
+    } else {
+        // 已登录，直接跳转到product.html
+        window.location.href = 'product.html';
+    }
+}
+
+// 额外优化：确保所有导航链接适配文件名修改
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+    });
+});
+
+
+
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+    });
+});
+</script>
+</body>
+</html>
